@@ -6,7 +6,11 @@ from webhelpers.html import literal
 from ckanext.ga_report.helpers import (most_popular_datasets,
                                        popular_datasets,
                                        single_popular_dataset,
-                                       month_option_title)
+                                       month_option_title,
+                                       join_x,
+                                       join_y,
+                                       get_tracking_enabled,
+                                       get_key_helper)
 
 log = logging.getLogger('ckanext.ga-report')
 
@@ -36,7 +40,11 @@ class GAReportPlugin(p.SingletonPlugin):
             'most_popular_datasets': most_popular_datasets,
             'single_popular_dataset': single_popular_dataset,
             'month_option_title': month_option_title,
-            'gravatar': custom_gravatar
+            'gravatar': custom_gravatar,
+            'join_x': join_x,
+            'join_y': join_y,
+            'get_tracking_enabled': get_tracking_enabled,
+            'get_key_helper': get_key_helper
         }
 
     def after_map(self, map):

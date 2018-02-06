@@ -66,28 +66,30 @@ CKAN.GA_Reports.bind_sparklines = function() {
    * Note that they cannot be drawn sooner.
    */
   var created = false;
+
+  function draw_sparkline() {
+    if (!created) {
+      var sparkOptions = {
+        enableTagOptions: true,
+        type: 'line',
+        width: 100,
+        height: 26,
+        chartRangeMin: 0,
+        spotColor: '',
+        maxSpotColor: '',
+        minSpotColor: '',
+        highlightSpotColor: '#000000',
+        lineColor: '#3F8E6D',
+        fillColor: '#B7E66B'
+      };
+      $('.sparkline').sparkline('html',sparkOptions);
+      created = true;
+    }
+    $.sparkline_display_visible();
+  }
+
   $('a[href="#totals"]').on(
-    'shown', 
-      function() {
-        if (!created) {
-          var sparkOptions = {
-            enableTagOptions: true,
-            type: 'line',
-            width: 100,
-            height: 26,
-            chartRangeMin: 0,
-            spotColor: '',
-            maxSpotColor: '',
-            minSpotColor: '',
-            highlightSpotColor: '#000000',
-            lineColor: '#3F8E6D',
-            fillColor: '#B7E66B'
-          };
-          $('.sparkline').sparkline('html',sparkOptions);
-          created = true;
-        }
-        $.sparkline_display_visible();
-      }
+    'shown', draw_sparkline
   );
 };
 
