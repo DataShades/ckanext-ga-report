@@ -3,22 +3,21 @@ import ckan.lib.helpers as h
 import ckan.plugins as p
 from ckan.plugins import implements, toolkit
 from webhelpers.html import literal
-from ckanext.ga_report.helpers import (most_popular_datasets,
-                                       popular_datasets,
-                                       single_popular_dataset,
-                                       month_option_title,
-                                       join_x,
-                                       join_y,
-                                       get_tracking_enabled,
-                                       get_key_helper)
+from ckanext.ga_report.helpers import (
+    most_popular_datasets, popular_datasets, single_popular_dataset,
+    month_option_title, join_x, join_y, get_tracking_enabled, get_key_helper
+)
 
 log = logging.getLogger('ckanext.ga-report')
+
 
 def custom_gravatar(*pargs, **kargs):
     gravatar = h.gravatar(*pargs, **kargs)
     pos = gravatar.find('/>')
-    gravatar = gravatar[:pos] + literal(' alt="User\'s profile gravatar" ') + gravatar[pos:]
+    gravatar = gravatar[:pos] + literal(' alt="User\'s profile gravatar" '
+                                        ) + gravatar[pos:]
     return gravatar
+
 
 class GAReportPlugin(p.SingletonPlugin):
     implements(p.IConfigurer, inherit=True)

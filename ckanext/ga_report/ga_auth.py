@@ -12,8 +12,7 @@ def _prepare_credentials(credentials_filename):
     """
     scope = ['https://www.googleapis.com/auth/analytics.readonly']
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        credentials_filename,
-        scopes=scope
+        credentials_filename, scopes=scope
     )
     return credentials
 
@@ -29,7 +28,9 @@ def init_service(credentials_file):
     credentials = _prepare_credentials(credentials_file)
     http = credentials.authorize(http)  # authorize the http object
 
-    return credentials.get_access_token().access_token, build('analytics', 'v3', http=http)
+    return credentials.get_access_token().access_token, build(
+        'analytics', 'v3', http=http
+    )
 
 
 def get_profile_id(service):
@@ -56,12 +57,17 @@ def get_profile_id(service):
             accountId = acc.get('id')
             break
     else:
-        raise Exception('Account did not match. Check `googleanalytics.account`')
+        raise Exception(
+            'Account did not match. Check `googleanalytics.account`'
+        )
 
-    webproperties = service.management().webproperties().list(accountId=accountId).execute()
+    service.management().webproperties().list(
+        accountId=accountId
+    ).execute()
 
     profiles = service.management().profiles().list(
-        accountId=accountId, webPropertyId=webPropertyId).execute()
+        accountId=accountId, webPropertyId=webPropertyId
+    ).execute()
 
     if profiles.get('items'):
         return profiles.get('items')[0].get('id')

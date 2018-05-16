@@ -1,10 +1,10 @@
-import logging
 import datetime
+import logging
 import os
 
+from ckan.lib.cli import CkanCommand
 from pylons import config
 
-from ckan.lib.cli import CkanCommand
 # No other CKAN imports allowed until _load_config is run,
 # or logging is disabled
 
@@ -60,7 +60,6 @@ class FixTimePeriods(CkanCommand):
         log.info("Processing complete")
 
 
-
 class LoadAnalytics(CkanCommand):
     """Get data from Google Analytics API and save it
     in the ga_model
@@ -79,16 +78,22 @@ class LoadAnalytics(CkanCommand):
 
     def __init__(self, name):
         super(LoadAnalytics, self).__init__(name)
-        self.parser.add_option('-d', '--delete-first',
-                               action='store_true',
-                               default=False,
-                               dest='delete_first',
-                               help='Delete data for the period first')
-        self.parser.add_option('-s', '--skip_url_stats',
-                               action='store_true',
-                               default=False,
-                               dest='skip_url_stats',
-                               help='Skip the download of URL data - just do site-wide stats')
+        self.parser.add_option(
+            '-d',
+            '--delete-first',
+            action='store_true',
+            default=False,
+            dest='delete_first',
+            help='Delete data for the period first'
+        )
+        self.parser.add_option(
+            '-s',
+            '--skip_url_stats',
+            action='store_true',
+            default=False,
+            dest='skip_url_stats',
+            help='Skip the download of URL data - just do site-wide stats'
+        )
         self.token = ""
 
     def command(self):
@@ -97,23 +102,35 @@ class LoadAnalytics(CkanCommand):
         from download_analytics import DownloadAnalytics
         from ga_auth import (init_service, get_profile_id)
 
-        ga_token_filepath = os.path.expanduser(config.get('googleanalytics.token.filepath', ''))
+        ga_token_filepath = os.path.expanduser(
+            config.get('googleanalytics.token.filepath', '')
+        )
         if not ga_token_filepath:
-            print 'ERROR: In the CKAN config you need to specify the filepath of the ' \
-                  'Google Analytics token file under key: googleanalytics.token.filepath'
+            print(
+                'ERROR: In the CKAN config you'
+                ' need to specify the filepath of the '
+                'Google Analytics token file under key: '
+                'googleanalytics.token.filepath'
+            )
             return
 
         try:
             self.token, svc = init_service(ga_token_filepath)
-        except TypeError as e:
-            print ('Have you correctly run the getauthtoken task and '
-                   'specified the correct token file in the CKAN config under '
-                   '"googleanalytics.token.filepath"?')
+        except TypeError:
+            print(
+                'Have you correctly run the getauthtoken task and '
+                'specified the correct token file in the CKAN config under '
+                '"googleanalytics.token.filepath"?'
+            )
             return
 
-        downloader = DownloadAnalytics(svc, self.token, profile_id=get_profile_id(svc),
-                                       delete_first=self.options.delete_first,
-                                       skip_url_stats=self.options.skip_url_stats)
+        downloader = DownloadAnalytics(
+            svc,
+            self.token,
+            profile_id=get_profile_id(svc),
+            delete_first=self.options.delete_first,
+            skip_url_stats=self.options.skip_url_stats
+        )
 
         time_period = self.args[0] if self.args else 'latest'
         if time_period == 'all':

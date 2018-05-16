@@ -4,13 +4,13 @@ import operator
 import ckan.lib.base as base
 import ckan.model as model
 from ckan.logic import get_action
-
-from ckanext.ga_report.ga_model import GA_Url, GA_Publisher
-from ckanext.ga_report.controller import _get_publishers
-
 from pylons import config
 
+from ckanext.ga_report.controller import _get_publishers
+from ckanext.ga_report.ga_model import GA_Url
+
 _log = logging.getLogger(__name__)
+
 
 def popular_datasets(count=10):
     import random
@@ -18,7 +18,7 @@ def popular_datasets(count=10):
     publisher = None
     publishers = _get_publishers(30)
     total = len(publishers)
-    while not publisher or not datasets:
+    while not publisher:
         rand = random.randrange(0, total)
         publisher = publishers[rand][0]
         if not publisher.state == 'active':
@@ -26,11 +26,9 @@ def popular_datasets(count=10):
             continue
         datasets = _datasets_for_publisher(publisher, 10)[:count]
 
-    ctx = {
-        'datasets': datasets,
-        'publisher': publisher
-    }
+    ctx = {'datasets': datasets, 'publisher': publisher}
     return base.render_snippet('ga_report/ga_popular_datasets.html', **ctx)
+
 
 def single_popular_dataset(top=100):
     '''Returns a random dataset from the most popular ones.
@@ -39,9 +37,9 @@ def single_popular_dataset(top=100):
     '''
     import random
 
-    top_datasets = model.Session.query(GA_Url).\
-                   filter(GA_Url.url.like('%/dataset/%')).\
-                   order_by('ga_url.pageviews::int desc')
+    top_datasets = model.Session.query(GA_Url).filter(
+        GA_Url.url.like('%/dataset/%')
+    ).order_by('ga_url.pageviews::int desc')
     num_top_datasets = top_datasets.count()
 
     dataset = None
@@ -66,21 +64,22 @@ def single_popular_dataset(top=100):
                   .filter_by(state='active').first()
         if not dataset:
             return None
-    dataset_dict = get_action('package_show')({'model': model,
-                                               'session': model.Session,
-                                               'validate': False},
-                                              {'id':dataset.id})
+    dataset_dict = get_action('package_show')({
+        'model': model,
+        'session': model.Session,
+        'validate': False
+    }, {
+        'id': dataset.id
+    })
     return dataset_dict
+
 
 def single_popular_dataset_html(top=100):
     dataset_dict = single_popular_dataset(top)
-    groups = package.get('groups', [])
-    publishers = [ g for g in groups if g.get('type') == 'organization' ]
-    publisher = publishers[0] if publishers else {'name':'', 'title': ''}
-    context = {
-        'dataset': dataset_dict,
-        'publisher': publisher_dict
-        }
+    groups = dataset_dict.get('groups', [])
+    publishers = [g for g in groups if g.get('type') == 'organization']
+    publisher_dict = publishers[0] if publishers else {'name': '', 'title': ''}
+    context = {'dataset': dataset_dict, 'publisher': publisher_dict}
     return base.render_snippet('ga_report/ga_popular_single.html', **context)
 
 
@@ -95,68 +94,81 @@ def most_popular_datasets(publisher, count=100, preview_image=None):
     ctx = {
         'dataset_count': len(results),
         'datasets': results,
-
         'publisher': publisher,
         'preview_image': preview_image
     }
 
     return base.render_snippet('ga_report/publisher/popular.html', **ctx)
 
+
 def _datasets_for_publisher(publisher, count):
     datasets = {}
-    entries = model.Session.query(GA_Url).\
-        filter(GA_Url.department_id==publisher.name).\
-        filter(GA_Url.url.like('%/dataset/%')).\
-        order_by('ga_url.pageviews::int desc').all()
+    entries = model.Session.query(GA_Url).filter(
+        GA_Url.department_id == publisher.name
+    ).filter(GA_Url.url.like('%/dataset/%')
+             ).order_by('ga_url.pageviews::int desc').all()
     for entry in entries:
         if len(datasets) < count:
             # TODO: [extract SA]
             p = model.Package.get(entry.url[len('/data/dataset/'):])
 
             if not p:
-                _log.warning("Could not find Package for {url}".format(url=entry.url))
+                _log.warning(
+                    "Could not find Package for {url}".format(url=entry.url)
+                )
                 continue
 
             if not p.state == 'active':
-                _log.warning("Package {0} is not active, it is {1}".format(p.name, p.state))
+                _log.warning(
+                    "Package {0} is not active, it is {1}".format(
+                        p.name, p.state
+                    )
+                )
                 continue
 
-            if not p.private == False:
-                _log.warning("Package {0} is private {1}".format(p.name, p.state))
+            if p.private:
+                _log.warning(
+                    "Package {0} is private {1}".format(p.name, p.state)
+                )
                 continue
 
-            if not p in datasets:
-                datasets[p] = {'views':0, 'visits': 0}
+            if p not in datasets:
+                datasets[p] = {'views': 0, 'visits': 0}
 
             datasets[p]['views'] = datasets[p]['views'] + int(entry.pageviews)
             datasets[p]['visits'] = datasets[p]['visits'] + int(entry.visits)
 
     results = []
     for k, v in datasets.iteritems():
-        results.append((k,v['views'],v['visits']))
+        results.append((k, v['views'], v['visits']))
 
     return sorted(results, key=operator.itemgetter(1), reverse=True)
 
+
 def month_option_title(month_iso, months, day):
-    month_isos = [ iso_code for (iso_code,name) in months ]
+    month_isos = [iso_code for (iso_code, name) in months]
     try:
         index = month_isos.index(month_iso)
     except ValueError:
         _log.error('Month "%s" not found in list of months.' % month_iso)
         return month_iso
     month_name = months[index][1]
-    if index==0:
-        return month_name + (' (up to %s)'%day)
+    if index == 0:
+        return month_name + (' (up to %s)' % day)
     return month_name
 
+
 def join_x(graph):
-    return ','.join([x for x,y in graph])
+    return ','.join([x for x, y in graph])
+
 
 def join_y(graph):
-    return ','.join([y for x,y in graph])
+    return ','.join([y for x, y in graph])
+
 
 def get_tracking_enabled():
     return config.get('ckan.tracking_enabled', 'false')
+
 
 def get_key_helper(d, key):
     return d.get(key)
