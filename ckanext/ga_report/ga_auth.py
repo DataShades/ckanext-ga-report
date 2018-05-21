@@ -29,7 +29,7 @@ def init_service(credentials_file):
     http = credentials.authorize(http)  # authorize the http object
 
     return credentials.get_access_token().access_token, build(
-        'analytics', 'v3', http=http
+        'analytics', 'v3', http=http, cache_discovery=False
     )
 
 

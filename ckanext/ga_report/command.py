@@ -133,9 +133,7 @@ class LoadAnalytics(CkanCommand):
         )
 
         time_period = self.args[0] if self.args else 'latest'
-        if time_period == 'all':
-            downloader.all_()
-        elif time_period == 'latest':
+        if time_period == 'latest':
             downloader.latest()
         else:
             # The month to use

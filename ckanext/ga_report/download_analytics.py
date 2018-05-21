@@ -18,6 +18,17 @@ log = logging.getLogger('ckanext.ga-report')
 FORMAT_MONTH = '%Y-%m'
 
 
+def _default_ga_args(start, end, profile_id):
+    args = {}
+    args["max-results"] = 100000
+    args["start-date"] = start
+    args["end-date"] = end
+    args["ids"] = "ga:" + profile_id
+    args["alt"] = "json"
+
+    return args
+
+
 class DownloadAnalytics(object):
     '''Downloads and stores analytics info'''
 
@@ -157,9 +168,10 @@ class DownloadAnalytics(object):
                 ga_model.pre_update_url_stats(period_name)
 
                 log.info('Downloading analytics for dataset views')
-                # TODO: [extract SA]
+
                 data = self.download(
-                    start_date, end_date, '~^/data/dataset/[a-z0-9-_]+'
+                    start_date, end_date,
+                    '~^(?:/data(?:/\w+)?)?/dataset/[a-z0-9-_]+'
                 )
 
                 log.info(
@@ -173,7 +185,8 @@ class DownloadAnalytics(object):
 
                 log.info('Downloading analytics for publisher views')
                 data = self.download(
-                    start_date, end_date, '~^/organization/[a-z0-9-_]+'
+                    start_date, end_date,
+                    '~^(?:/data(?:/\w+)?)?/organization/[a-z0-9-_]+'
                 )
 
                 log.info(
@@ -245,24 +258,14 @@ class DownloadAnalytics(object):
 
         # Supported query params at
         # https://developers.google.com/analytics/devguides/reporting/core/v3/reference
-        # https://ga-dev-tools.appspot.com/explorer/
-        try:
-            args = {}
-            args["sort"] = "-ga:pageviews"
-            args["max-results"] = 100000
-            args["dimensions"] = "ga:pagePath"
-            args["start-date"] = start_date
-            args["end-date"] = end_date
-            args["metrics"] = metrics
-            args["ids"] = "ga:" + self.profile_id
-            args["filters"] = query
-            args["alt"] = "json"
-            print args
-            results = self._get_json(args)
+        # whttps://ga-dev-tools.appspot.com/explorer/
+        args = _default_ga_args(start_date, end_date, self.profile_id)
 
-        except Exception, e:
-            log.exception(e)
-            return dict(url=[])
+        args["sort"] = "-ga:pageviews"
+        args["dimensions"] = "ga:pagePath"
+        args["metrics"] = metrics
+        args["filters"] = query
+        results = self._get_json(args)
 
         packages = []
         log.info("There are %d results" % results['totalResults'])
@@ -351,139 +354,106 @@ class DownloadAnalytics(object):
         self, start_date, end_date, period_name, period_complete_day
     ):
         """ Fetches distinct totals, total pageviews etc """
-        try:
-            args = {}
-            args["max-results"] = 100000
-            args["start-date"] = start_date
-            args["end-date"] = end_date
-            args["ids"] = "ga:" + self.profile_id
+        args = _default_ga_args(start_date, end_date, self.profile_id)
 
-            args["metrics"] = "ga:pageviews"
-            args["sort"] = "-ga:pageviews"
-            args["alt"] = "json"
+        args["metrics"] = "ga:pageviews"
+        args["sort"] = "-ga:pageviews"
 
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
+        results = self._get_json(args)
 
-        result_data = results.get('rows')
-        ga_model.update_sitewide_stats(
-            period_name, "Totals", {'Total page views': result_data[0][0]},
-            period_complete_day
-        )
-
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests ourselves.
-
-            args = {}
-            args["max-results"] = 100000
-            args["start-date"] = start_date
-            args["end-date"] = end_date
-            args["ids"] = "ga:" + self.profile_id
-
-            args["metrics"] = (
-                "ga:pageviewsPerSession,ga:avgSessionDuration,"
-                " ga:percentNewSessions,ga:sessions,ga:users"
+        if results['totalResults'] > 0:
+            result_data = results['rows']
+            ga_model.update_sitewide_stats(
+                period_name, "Totals", {'Total page views': result_data[0][0]},
+                period_complete_day
             )
-            args["alt"] = "json"
 
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
+        # Because of issues of invalid responses, we are going to make
+        # these requests ourselves.
+        args = _default_ga_args(start_date, end_date, self.profile_id)
 
-        result_data = results.get('rows')
-        data = {
-            'Pages per visit': result_data[0][0],
-            'Average time on site': result_data[0][1],
-            'New visits': result_data[0][2],
-            'Total visits': result_data[0][3],
-            'Unique visitors': result_data[0][4],
-        }
-        ga_model.update_sitewide_stats(
-            period_name, "Totals", data, period_complete_day
+        args["metrics"] = (
+            "ga:pageviewsPerSession,ga:avgSessionDuration,"
+            " ga:percentNewSessions,ga:sessions,ga:users"
         )
+
+        results = self._get_json(args)
+        if results['totalResults'] > 0:
+            result_data = results['rows']
+            data = {
+                'Pages per visit': result_data[0][0],
+                'Average time on site': result_data[0][1],
+                'New visits': result_data[0][2],
+                'Total visits': result_data[0][3],
+                'Unique visitors': result_data[0][4],
+            }
+            ga_model.update_sitewide_stats(
+                period_name, "Totals", data, period_complete_day
+            )
 
         # Bounces from / or another configurable page.
         path = '/'
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests
-            # ourselves.
-            args = {}
-            args["max-results"] = 100000
-            args["start-date"] = start_date
-            args["end-date"] = end_date
-            args["ids"] = "ga:" + self.profile_id
+        # Because of issues of invalid responses, we are going to make
+        # these requests
+        # ourselves.
+        args = _default_ga_args(start_date, end_date, self.profile_id)
 
-            args["filters"] = 'ga:pagePath==%s' % (path, )
-            args["dimensions"] = 'ga:pagePath'
-            args["metrics"] = "ga:visitBounceRate"
-            args["alt"] = "json"
+        args["filters"] = 'ga:pagePath==%s' % (path, )
+        args["dimensions"] = 'ga:pagePath'
+        args["metrics"] = "ga:visitBounceRate"
 
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
+        results = self._get_json(args)
 
-        result_data = results.get('rows')
-        if not result_data or len(result_data) != 1:
-            log.error(
-                'Could not pinpoint the bounces for path: %s. Got results: %r',
-                path, result_data
+        if results['totalResults'] > 0:
+            result_data = results['rows']
+            if not result_data or len(result_data) != 1:
+                log.error(
+                    'Could not pinpoint the bounces for path: %s. Got results: %r',
+                    path, result_data
+                )
+                return
+            results = result_data[0]
+            bounces = float(results[1])
+            # visitBounceRate is already a %
+            log.info('Google reports visitBounceRate as %s', bounces)
+            ga_model.update_sitewide_stats(
+                period_name, "Totals",
+                {'Bounce rate (home page)': float(bounces)},
+                period_complete_day
             )
-            return
-        results = result_data[0]
-        bounces = float(results[1])
-        # visitBounceRate is already a %
-        log.info('Google reports visitBounceRate as %s', bounces)
-        ga_model.update_sitewide_stats(
-            period_name, "Totals", {'Bounce rate (home page)': float(bounces)},
-            period_complete_day
-        )
 
     def _locale_stats(
         self, start_date, end_date, period_name, period_complete_day
     ):
         """ Fetches stats about language and country """
+        # Because of issues of invalid responses, we are going to make
+        # these requests
+        # ourselves.
 
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests
-            # ourselves.
+        args = _default_ga_args(start_date, end_date, self.profile_id)
 
-            args = {}
-            args["max-results"] = 100000
-            args["start-date"] = start_date
-            args["end-date"] = end_date
-            args["ids"] = "ga:" + self.profile_id
+        args["dimensions"] = "ga:language,ga:country"
+        args["metrics"] = "ga:pageviews"
+        args["sort"] = "-ga:pageviews"
 
-            args["dimensions"] = "ga:language,ga:country"
-            args["metrics"] = "ga:pageviews"
-            args["sort"] = "-ga:pageviews"
-            args["alt"] = "json"
+        results = self._get_json(args)
 
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
+        if results['totalResults'] > 0:
+            result_data = results.get('rows')
 
-        result_data = results.get('rows')
-        data = {}
-        for result in result_data:
-            data[result[0]] = data.get(result[0], 0) + int(result[2])
-        ga_model.update_sitewide_stats(
-            period_name, "Languages", data, period_complete_day
-        )
+            data = {}
+            for result in result_data:
+                data[result[0]] = data.get(result[0], 0) + int(result[2])
+            ga_model.update_sitewide_stats(
+                period_name, "Languages", data, period_complete_day
+            )
 
-        data = {}
-        for result in result_data:
-            data[result[1]] = data.get(result[1], 0) + int(result[2])
-        ga_model.update_sitewide_stats(
-            period_name, "Country", data, period_complete_day
-        )
+            data = {}
+            for result in result_data:
+                data[result[1]] = data.get(result[1], 0) + int(result[2])
+            ga_model.update_sitewide_stats(
+                period_name, "Country", data, period_complete_day
+            )
 
     def _download_stats(
         self, start_date, end_date, period_name, period_complete_day
@@ -492,32 +462,22 @@ class DownloadAnalytics(object):
         import ckan.model as model
 
         data = {}
+        # Because of issues of invalid responses, we are going to make
+        # these requests ourselves.
+        args = _default_ga_args(start_date, end_date, self.profile_id)
 
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests ourselves.
-            args = {}
-            args["max-results"] = 100000
-            args["start-date"] = start_date
-            args["end-date"] = end_date
-            args["ids"] = "ga:" + self.profile_id
+        args["filters"] = 'ga:eventAction==Download'
+        args["dimensions"] = "ga:eventLabel"
+        args["metrics"] = "ga:totalEvents"
 
-            args["filters"] = 'ga:eventAction==Download'
-            args["dimensions"] = "ga:eventLabel"
-            args["metrics"] = "ga:totalEvents"
-            args["alt"] = "json"
-
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
-
-        result_data = results.get('rows')
-        if not result_data:
-            # We may not have data for this time period, so we need to bail
-            # early.
-            log.info("There is no download data for this time period")
-            return
+        results = self._get_json(args)
+        if results['totalResults'] > 0:
+            result_data = results['rows']
+            if not result_data:
+                # We may not have data for this time period, so we need to bail
+                # early.
+                log.info("There is no download data for this time period")
+                return
 
         def process_result_data(result_data, cached=False):
             progress_total = len(result_data)
@@ -618,130 +578,121 @@ class DownloadAnalytics(object):
             'Associating downloads of '
             'resource URLs with their respective datasets'
         )
-        process_result_data(results.get('rows'))
+        if results['totalResults'] > 0:
+            process_result_data(results.get('rows'))
 
-        ga_model.update_sitewide_stats(
-            period_name, "Downloads", data, period_complete_day
-        )
+            ga_model.update_sitewide_stats(
+                period_name, "Downloads", data, period_complete_day
+            )
 
     def _social_stats(
         self, start_date, end_date, period_name, period_complete_day
     ):
         """ Finds out which social sites people are referred from """
+        # Because of issues of invalid responses, we are going to make
+        # these requests
+        # ourselves.
 
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests
-            # ourselves.
-
-            args = dict(
-                ids='ga:' + self.profile_id,
-                metrics='ga:pageviews',
-                sort='-ga:pageviews',
-                dimensions="ga:socialNetwork,ga:referralPath",
-                max_results=10000
-            )
-            args['start-date'] = start_date
-            args['end-date'] = end_date
-
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
-
-        result_data = results.get('rows')
-        data = {}
-        for result in result_data:
-            if not result[0] == '(not set)':
-                data[result[0]] = data.get(result[0], 0) + int(result[2])
-        ga_model.update_sitewide_stats(
-            period_name, "Social sources", data, period_complete_day
+        args = dict(
+            ids='ga:' + self.profile_id,
+            metrics='ga:pageviews',
+            sort='-ga:pageviews',
+            dimensions="ga:socialNetwork,ga:referralPath",
+            max_results=10000
         )
+        args['start-date'] = start_date
+        args['end-date'] = end_date
+
+        results = self._get_json(args)
+        if results['totalResults'] > 0:
+            result_data = results['rows']
+            data = {}
+            for result in result_data:
+                if not result[0] == '(not set)':
+                    data[result[0]] = data.get(result[0], 0) + int(result[2])
+            ga_model.update_sitewide_stats(
+                period_name, "Social sources", data, period_complete_day
+            )
 
     def _os_stats(
         self, start_date, end_date, period_name, period_complete_day
     ):
         """ Operating system stats """
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests ourselves.
 
-            args = dict(
-                ids='ga:' + self.profile_id,
-                metrics='ga:pageviews',
-                sort='-ga:pageviews',
-                dimensions="ga:operatingSystem,ga:operatingSystemVersion",
-                max_results=10000
+        # Because of issues of invalid responses, we are going to make
+        # these requests ourselves.
+
+        args = dict(
+            ids='ga:' + self.profile_id,
+            metrics='ga:pageviews',
+            sort='-ga:pageviews',
+            dimensions="ga:operatingSystem,ga:operatingSystemVersion",
+            max_results=10000
+        )
+        args['start-date'] = start_date
+        args['end-date'] = end_date
+
+        results = self._get_json(args)
+        if results['totalResults'] > 0:
+
+            result_data = results['rows']
+            data = {}
+            for result in result_data:
+                data[result[0]] = data.get(result[0], 0) + int(result[2])
+            ga_model.update_sitewide_stats(
+                period_name, "Operating Systems", data, period_complete_day
             )
-            args['start-date'] = start_date
-            args['end-date'] = end_date
 
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
-
-        result_data = results.get('rows')
-        data = {}
-        for result in result_data:
-            data[result[0]] = data.get(result[0], 0) + int(result[2])
-        ga_model.update_sitewide_stats(
-            period_name, "Operating Systems", data, period_complete_day
-        )
-
-        data = {}
-        for result in result_data:
-            key = "%s %s" % (result[0], result[1])
-            data[key] = result[2]
-        ga_model.update_sitewide_stats(
-            period_name, "Operating Systems versions", data,
-            period_complete_day
-        )
+            data = {}
+            for result in result_data:
+                key = "%s %s" % (result[0], result[1])
+                data[key] = result[2]
+            ga_model.update_sitewide_stats(
+                period_name, "Operating Systems versions", data,
+                period_complete_day
+            )
 
     def _browser_stats(
         self, start_date, end_date, period_name, period_complete_day
     ):
         """ Information about browsers and browser versions """
+        # Because of issues of invalid responses, we are going to make
+        # these requests ourselves.
 
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests ourselves.
-
-            args = dict(
-                ids='ga:' + self.profile_id,
-                metrics='ga:pageviews',
-                sort='-ga:pageviews',
-                dimensions="ga:browser,ga:browserVersion",
-                max_results=10000
-            )
-
-            args['start-date'] = start_date
-            args['end-date'] = end_date
-
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
-
-        result_data = results.get('rows')
-        # e.g. [u'Firefox', u'19.0', u'20']
-
-        data = {}
-        for result in result_data:
-            data[result[0]] = data.get(result[0], 0) + int(result[2])
-        ga_model.update_sitewide_stats(
-            period_name, "Browsers", data, period_complete_day
+        args = dict(
+            ids='ga:' + self.profile_id,
+            metrics='ga:pageviews',
+            sort='-ga:pageviews',
+            dimensions="ga:browser,ga:browserVersion",
+            max_results=10000
         )
 
-        data = {}
-        for result in result_data:
-            key = "%s %s" % (
-                result[0], self._filter_browser_version(result[0], result[1])
+        args['start-date'] = start_date
+        args['end-date'] = end_date
+
+        results = self._get_json(args)
+
+        if results['totalResults'] > 0:
+            result_data = results['rows']
+            # e.g. [u'Firefox', u'19.0', u'20']
+
+            data = {}
+            for result in result_data:
+                data[result[0]] = data.get(result[0], 0) + int(result[2])
+            ga_model.update_sitewide_stats(
+                period_name, "Browsers", data, period_complete_day
             )
-            data[key] = data.get(key, 0) + int(result[2])
-        ga_model.update_sitewide_stats(
-            period_name, "Browser versions", data, period_complete_day
-        )
+
+            data = {}
+            for result in result_data:
+                key = "%s %s" % (
+                    result[0],
+                    self._filter_browser_version(result[0], result[1])
+                )
+                data[key] = data.get(key, 0) + int(result[2])
+            ga_model.update_sitewide_stats(
+                period_name, "Browser versions", data, period_complete_day
+            )
 
     @classmethod
     def _filter_browser_version(cls, browser, version_str):
@@ -770,23 +721,19 @@ class DownloadAnalytics(object):
     ):
         """ Info about mobile devices """
 
-        try:
-            # Because of issues of invalid responses, we are going to make
-            # these requests ourselves.
-            args = dict(
-                ids='ga:' + self.profile_id,
-                metrics='ga:pageviews',
-                sort='-ga:pageviews',
-                dimensions="ga:mobileDeviceBranding, ga:mobileDeviceInfo",
-                max_results=10000
-            )
-            args['start-date'] = start_date
-            args['end-date'] = end_date
+        # Because of issues of invalid responses, we are going to make
+        # these requests ourselves.
+        args = dict(
+            ids='ga:' + self.profile_id,
+            metrics='ga:pageviews',
+            sort='-ga:pageviews',
+            dimensions="ga:mobileDeviceBranding, ga:mobileDeviceInfo",
+            max_results=10000
+        )
+        args['start-date'] = start_date
+        args['end-date'] = end_date
 
-            results = self._get_json(args)
-        except Exception, e:
-            log.exception(e)
-            results = dict(url=[])
+        results = self._get_json(args)
 
         result_data = results.get('rows', [])
         data = {}

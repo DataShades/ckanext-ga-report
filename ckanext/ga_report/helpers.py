@@ -8,6 +8,9 @@ from pylons import config
 
 from ckanext.ga_report.controller import _get_publishers
 from ckanext.ga_report.ga_model import GA_Url
+import re
+
+EXTRACT_DATASET_ID = re.compile('(?:/data(?:/\w+)?)?/dataset/([^/]+)')
 
 _log = logging.getLogger(__name__)
 
@@ -48,8 +51,8 @@ def single_popular_dataset(top=100):
         while not dataset:
             rand = random.randrange(0, min(top, num_top_datasets))
             ga_url = top_datasets[rand]
-            # TODO: [extract SA]
-            dataset = model.Package.get(ga_url.url[len('/data/dataset/'):])
+            id = EXTRACT_DATASET_ID.match(ga_url.url).group(1)
+            dataset = model.Package.get(id)
             if dataset and not dataset.state == 'active':
                 dataset = None
             # When testing, it is possible that top datasets are not available
@@ -109,8 +112,8 @@ def _datasets_for_publisher(publisher, count):
              ).order_by('ga_url.pageviews::int desc').all()
     for entry in entries:
         if len(datasets) < count:
-            # TODO: [extract SA]
-            p = model.Package.get(entry.url[len('/data/dataset/'):])
+            id = EXTRACT_DATASET_ID.match(entry.url).group(1)
+            p = model.Package.get(id)
 
             if not p:
                 _log.warning(

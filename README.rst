@@ -85,8 +85,6 @@ Download some GA data and store it in CKAN's database. (Ensure your CKAN pyenv i
 
 The value after the token file is how much data you want to retrieve, this can be
 
-* **all**         - data for all time (since 2010)
-
 * **latest**      - (default) just the 'latest' data
 
 * **YYYY-MM-DD**  - just data for all time periods going back to (and including) this date

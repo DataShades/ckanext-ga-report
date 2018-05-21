@@ -3,6 +3,7 @@ import uuid
 
 import ckan.model as model
 import ckan.model.group as group
+import ckan.lib.helpers as h
 from sqlalchemy import Table, Column, MetaData, types
 from sqlalchemy.orm import mapper
 from sqlalchemy.sql import or_
@@ -125,8 +126,9 @@ def _normalize_url(url):
 def _get_package_and_publisher(url):
     # e.g. /data/dataset/fuel_prices
     # e.g. /data/dataset/fuel_prices/resource/e63380d4
-    # TODO: [extract SA]
-    dataset_match = re.match('/data/dataset/([^/]+)(/.*)?', url)
+    # e.g. /data/en/dataset/fuel_prices/resource/e63380d4
+    # e.g. /dataset/fuel_prices/resource/e63380d4
+    dataset_match = re.match('(?:/data(?:/\w+)?)?/dataset/([^/]+)(/.*)?', url)
     if dataset_match:
         dataset_ref = dataset_match.groups()[0]
         dataset = model.Session.query(model.Package).filter(
@@ -236,9 +238,8 @@ def post_update_url_stats():
         package, publisher = _get_package_and_publisher(key)
         # some old data might have used UUIDs or old slugs, update All
         # period data to be consistent
-        # TODO: [extract SA]
         uuidregex = re.compile(
-            '\/data/dataset\/[a-z0-9]{8}-[a-z0-9]{4}-'
+            '(?:/data(?:/\w+)?)?/dataset/[a-z0-9]{8}-[a-z0-9]{4}-'
             '[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'
         )
 
@@ -252,6 +253,7 @@ def post_update_url_stats():
             'department_id': publisher,
             'package_id': package
         }
+
         if uuidregex.match(key):
             log.info("ignoring " + key)
         else:
@@ -272,8 +274,7 @@ def update_url_stats(period_name, period_complete_day, data):
         item = {}
         package, publisher = _get_package_and_publisher(url)
         if package:
-            # TODO: [extract SA]
-            url = '/data/dataset/' + package
+            url = h.url_for('dataset_read', id=package)
         old_visits = url_data.get(url, {'visits': 0})['visits']
         old_views = url_data.get(url, {'views': 0})['views']
         item['package'] = package
