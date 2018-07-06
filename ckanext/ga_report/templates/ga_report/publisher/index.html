@@ -3,15 +3,15 @@
 
 {% block page_title %}Usage by Publisher{% endblock %}
 {% block optional_head %}
-    <link rel="stylesheet" type="text/css" href="/scripts/vendor/rickshaw.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/ga_report.css?1"/>
-    <script type="text/javascript" src="/scripts/modernizr-2.6.2.custom.js"></script>
-    <script type="text/javascript" src="/scripts/ckanext_ga_reports.js?1"></script>
-    <script type="text/javascript" src="/scripts/vendor/jquery.sparkline.modified.js"></script>
-    <script type="text/javascript" src="/scripts/rickshaw_ie7_shim.js"></script>
-    <script type="text/javascript" src="/scripts/vendor/d3.v2.js"></script>
-    <script type="text/javascript" src="/scripts/vendor/d3.layout.min.js"></script>
-    <script type="text/javascript" src="/scripts/vendor/rickshaw.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ h.url_for_static('/scripts/vendor/rickshaw.min.css') }}"/>
+    <link rel="stylesheet" type="text/css" href="/css/ga_report.css?1') }}"/>
+    <script type="text/javascript" src="{{ h.url_for_static('/scripts/modernizr-2.6.2.custom.js') }}"></script>
+    <script type="text/javascript" src="{{ h.url_for_static('/scripts/ckanext_ga_reports.js?1') }}"></script>
+    <script type="text/javascript" src="{{ h.url_for_static('/scripts/vendor/jquery.sparkline.modified.js') }}"></script>
+    <script type="text/javascript" src="{{ h.url_for_static('/scripts/rickshaw_ie7_shim.js') }}"></script>
+    <script type="text/javascript" src="{{ h.url_for_static('/scripts/vendor/d3.v2.js') }}"></script>
+    <script type="text/javascript" src="{{ h.url_for_static('/scripts/vendor/d3.layout.min.js') }}"></script>
+    <script type="text/javascript" src="{{ h.url_for_static('/scripts/vendor/rickshaw.min.js') }}"></script>
 {% endblock %}
 {% block breadcrumbs %}
     <li><a href="{{h.url_for_static('/site-usage')}}">Site Analytics</a></li>
@@ -50,7 +50,7 @@
             </tr>
         {% endfor %}
     </table>
-    
+
     {% block optional_footer %}
         <script type="text/javascript">
             $(function() {

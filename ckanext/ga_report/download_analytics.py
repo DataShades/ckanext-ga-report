@@ -276,9 +276,10 @@ class DownloadAnalytics(object):
                 # www.data.gov.uk or data.gov.uk
                 url = loc
 
-                if not url.startswith(
-                    ('/data/dataset/', '/organization/', '/dataset')
-                ):
+                if not url.startswith((
+                    '/data/dataset/', '/data/organization/', '/organization/',
+                    '/dataset'
+                )):
                     # filter out strays like:
                     # /data/user/login?came_from=http://data.gov.uk/data/dataset/os-code-point-open
                     # /403.html?page=/about&from=http://data.gov.uk/publisher/planning-inspectorate
@@ -561,8 +562,8 @@ class DownloadAnalytics(object):
 
                 if package_name:
                     log.info(package_name)
-                    data[package_name] = data.get(package_name, 0
-                                                  ) + int(result[1])
+                    data[package_name] = data.get(package_name,
+                                                  0) + int(result[1])
                 else:
                     resources_not_matched.append(url)
                     continue
