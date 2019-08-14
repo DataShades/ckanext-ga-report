@@ -600,9 +600,10 @@ def _get_top_publishers_graph(limit=20):
     )
     graph_dict = {}
     for dept_id, period_name, views in q:
+        group = model.Group.get(dept_id)
         graph_dict[dept_id] = graph_dict.get(
             dept_id, {
-                'name': model.Group.get(dept_id).title,
+                'name': group.title if group else dept_id,
                 'raw': {}
             }
         )
