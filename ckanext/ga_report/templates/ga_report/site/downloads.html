@@ -3,12 +3,12 @@
 
 {% block page_title %}Downloads{% endblock %}
 {% block primary_sidebar_extras %}
-    {{m.ga_sidebar(download_link=h.url_for(controller='ckanext.ga_report.controller:GaReport',action='csv_downloads',month=c.month or 'all'))}}
+    {{m.ga_sidebar(download_link=h.url_for('ga_report.csv_downloads',month=c.month or 'all'))}}
 {% endblock %}
 {% block page_heading %}Downloads {{usage_nav('Downloads')}}{% endblock %}
 {% block content %}
     <div class="boxed">
-        <form class="form-inline" action="{{h.url_for(controller='ckanext.ga_report.controller:GaReport',action='downloads')}}" method="get">
+        <form class="form-inline" action="{{h.url_for('ga_report.downloads')}}" method="get">
             <div class="controls">
                 {{m.month_selector(c.month, c.months, c.day)}}
                 <input class="btn button btn-primary" type='submit' value="Update"/>

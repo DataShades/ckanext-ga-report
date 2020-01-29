@@ -18,8 +18,8 @@
     <li><a href="{{h.url_for_static('/site-usage/publisher')}}">Publishers</a></li>
 {% endblock %}
 {% block content %}
-    {% set download_link=h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='publisher_csv',month=c.month or 'all') %}
-    <a class="btn button btn-primary btn-sm pull-right" href="{{download_link}}"><i class="icon-download"></i>&nbsp; Download as CSV</a>
+    {% set download_link=h.url_for('ga_report.publisher_csv',month=c.month or 'all') %}
+    <a class="btn button btn-primary btn-sm pull-right" href="{{download_link}}"><i class="fa fa-download"></i>&nbsp; Download as CSV</a>
     <h1>Site Usage <small>Publishers</small></h1>
     <div class="row" style="background: #fff;">
         <div class="col-md-8">
@@ -30,7 +30,7 @@
         </div>
     </div>
     <hr/>
-    <form class="form-inline" action="{{h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport',action='publishers')}}" method="get">
+    <form class="form-inline" action="{{h.url_for('ga_report.publishers')}}" method="get">
         <div class="controls">
             <label class="ga-reports-heading" for="month">Statistics for</label>
             {{m.month_selector(c.month, c.months, c.day)}}
@@ -44,13 +44,13 @@
         {% for publisher, views, visits in c.top_publishers %}
             <tr>
                 <td>
-                    {{h.link_to(publisher.title, h.url_for(controller='ckanext.ga_report.controller:GaDatasetReport', action='read_publisher', id=publisher.name) + (("?month=" + c.month) if c.month else ''))}}
+                    {{h.link_to(publisher.title, h.url_for('ga_report.read_publisher', id=publisher.name) + (("?month=" + c.month) if c.month else ''))}}
                 </td>
                 <td class="td-numeric">{{views}}</td>
             </tr>
         {% endfor %}
     </table>
-    
+
     {% block optional_footer %}
         <script type="text/javascript">
             $(function() {

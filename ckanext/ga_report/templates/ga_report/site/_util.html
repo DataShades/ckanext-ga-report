@@ -41,7 +41,7 @@ tag listing -->
         {% for tag in tags %}
             {% if not h.get_key_helper(tag, 'vocabulary_id') %}
                 <li>
-                    {{h.link_to(tag['display_name'], h.url_for(controller='tag', action='read', id=tag['name']))}}
+                    {{h.link_to(tag['display_name'], h.url_for('tag.read', id=tag['name']))}}
                 </li>
             {% endif %}
         {% endfor %}
@@ -77,7 +77,7 @@ and this renders the standard group listing -->
         <tr><th>Title</th><th>Number of datasets</th><th>Description</th></tr>
         {% for group in groups %}
             <tr>
-                <td><a href="{{h.url_for(controller='group', action='read', id=group.name)}}">{{group.display_name}}</a></td>
+                <td><a href="{{h.url_for('group.read', id=group.name)}}">{{group.display_name}}</a></td>
                 <td>{{len(group.packages)}}</td>
                 <td>{{h.truncate(group.description, length=80, whole_word=True)}}</td>
             </tr>
@@ -110,7 +110,7 @@ and this renders the standard group listing. Same as the above, but using dictio
 
 {% macro package_resources_icon(package) %}
     {% if package.resources %}
-        <a  href="{{h.url_for(controller='package', action='read', id=package.name, anchor='resources')}}">
+        <a  href="{{h.url_for('dataset.read', id=package.name, anchor='resources')}}">
             <img src="{{h.icon_url('arrow_down')}}" title="View dataset resources" alt="DOWNLOAD" />
         </a>
     {% else %}
@@ -119,7 +119,7 @@ and this renders the standard group listing. Same as the above, but using dictio
 {% endmacro %}
 
 {% macro esource_summary(pkg, res) %}
-    <a href="{{h.url_for(controller='package', action='resource_read', id=pkg.id, resource_id=res.id)}}">
+    <a href="{{h.url_for('resource.read', id=pkg.id, resource_id=res.id)}}">
         {{h.resource_display_name(res)}}
     </a>
 {% endmacro %}
@@ -153,7 +153,7 @@ and this renders the standard group listing. Same as the above, but using dictio
 
 <!--! Used by group listing -->
 {% macro package_summary(pkg) %}
-    <a href="{{h.url_for(controller='package', action='read', id=pkg.name)}}">
+    <a href="{{h.url_for('dataset.read', id=pkg.name)}}">
         {{pkg.name}} - {{pkg.title}}
     </a>
 {% endmacro %}
@@ -178,7 +178,7 @@ and this renders the standard group listing. Same as the above, but using dictio
             <ul class="stars default0star">
                 {% for number,name in zip(range(1,6), ['one', 'two', 'three', 'four', 'five']) %}
                     <li class="{{name}}">
-                        <a href="{{h.url_for(controller='package',action='rate',id=c.pkg.name,rating=number)}}" title="{{number}} Star">{{number}}</a>
+                        <a href="{{h.url_for('dataset.rate',id=c.pkg.name,rating=number)}}" title="{{number}} Star">{{number}}</a>
                     </li>
                 {% endfor %}
             </ul>

@@ -11,7 +11,7 @@ import ckan.model as model
 import ckan.plugins.toolkit as tk
 import flask
 import sqlalchemy
-from sqlalchemy import func, cast
+from sqlalchemy import func, cast, text
 
 from ckanext.ga_report.ga_model import GA_Url, GA_Stat, GA_ReferralStat
 
@@ -189,7 +189,7 @@ def _get_packages(publisher=None, month="", count=-1):
     if publisher:
         q = q.filter(GA_Url.department_id == publisher.name)
     q = q.filter(GA_Url.period_name == month)
-    q = q.order_by("ga_url.pageviews::int desc")
+    q = q.order_by(text("ga_url.pageviews::int desc"))
     top_packages = []
     if count == -1:
         entries = q.all()
@@ -261,7 +261,7 @@ def _month_details(cls, stat_key=None):
     if stat_key:
         q = q.filter(cls.stat_name == stat_key)
 
-    vals = q.order_by("period_name desc").all()
+    vals = q.order_by(text("period_name desc")).all()
 
     if vals and vals[0][1]:
         day = int(vals[0][1])
@@ -279,12 +279,12 @@ def _month_details(cls, stat_key=None):
 
 
 def csv(month):
-
+    import csv
     q = model.Session.query(GA_Stat).filter(GA_Stat.stat_name != "Downloads")
     if month != "all":
         q = q.filter(GA_Stat.period_name == month)
     entries = q.order_by(
-        "GA_Stat.period_name, GA_Stat.stat_name, GA_Stat.key"
+        text("GA_Stat.period_name, GA_Stat.stat_name, GA_Stat.key")
     ).all()
 
     content = io.StringIO()
@@ -296,7 +296,7 @@ def csv(month):
             [entry.period_name, entry.stat_name, entry.key, entry.value]
         )
 
-    response = flask.make_response(io.getvalue())
+    response = flask.make_response(content.getvalue())
     response.headers["Content-Type"] = "text/csv; charset=utf-8"
     response.headers["Content-Disposition"] = str(
         "attachment; filename=stats_%s.csv" % (month,)
@@ -321,7 +321,7 @@ def index():
     q = model.Session.query(GA_Stat).filter(GA_Stat.stat_name == "Totals")
     if tk.c.month:
         q = q.filter(GA_Stat.period_name == tk.c.month)
-    entries = q.order_by("ga_stat.key").all()
+    entries = q.order_by(text("ga_stat.key")).all()
 
     def clean_key(key, val):
         if key in [
@@ -369,7 +369,7 @@ def index():
         d = collections.defaultdict(list)
         for e in entries:
             d[e.key].append(float(e.value))
-        for k, v in d.iteritems():
+        for k, v in d.items():
             if k in ["Total page views", "Total visits"]:
                 v = sum(v)
             else:
@@ -412,7 +412,7 @@ def index():
         if tk.c.month
         else q
     )
-    q = q.order_by("ga_referrer.count::int desc")
+    q = q.order_by(text("ga_referrer.count::int desc"))
     for entry in q.all():
         tk.c.social_referrers.append(
             (
@@ -431,13 +431,13 @@ def index():
         if tk.c.month
         else q
     )
-    q = q.order_by("count desc").group_by(GA_ReferralStat.url)
+    q = q.order_by(text("count desc")).group_by(GA_ReferralStat.url)
     for entry in q.all():
         tk.c.social_referrer_totals.append(
             (shorten_name(entry[0]), fill_out_url(entry[0]), "", entry[1])
         )
 
-    for k, v in keys.iteritems():
+    for k, v in keys.items():
         q = (
             model.Session.query(GA_Stat)
             .filter(GA_Stat.stat_name == k)
@@ -453,7 +453,7 @@ def index():
         for e in q.all():
             d[e.key] += int(e.value)
         entries = []
-        for key, val in d.iteritems():
+        for key, val in d.items():
             entries.append((key, val,))
         entries = sorted(entries, key=operator.itemgetter(1), reverse=True)
 
@@ -507,7 +507,7 @@ def publisher_csv(month):
         Returns a CSV of each publisher with the total number of dataset
         views & visits.
         """
-
+    import csv
     content = io.StringIO()
     tk.c.month = month if not month == "all" else ""
 
@@ -536,17 +536,18 @@ def dataset_csv(id="all", month="all"):
         :param id: A Publisher ID or None if you want for all
         :param month: The time period, or 'all'
         """
-
+    import csv
     content = io.StringIO()
     tk.c.month = month if not month == "all" else ""
+    publisher_name = publisher = None
     if id != "all":
-        tk.c.publisher = model.Group.get(id)
-        if not tk.c.publisher:
+        publisher = model.Group.get(id)
+        if not publisher:
             return tk.abort(
                 404, "A publisher with that name could not be found"
             )
 
-    packages = _get_packages(publisher=tk.c.publisher, month=tk.c.month)
+    packages = _get_packages(publisher=publisher, month=tk.c.month)
 
     writer = csv.writer(content)
     writer.writerow(
@@ -577,7 +578,7 @@ def dataset_csv(id="all", month="all"):
     response.headers["Content-Type"] = "text/csv; charset=utf-8"
     response.headers["Content-Disposition"] = str(
         "attachment; filename=datasets_%s_%s.csv"
-        % (tk.c.publisher_name, month,)
+        % (publisher_name, month,)
     )
     return response
 
@@ -621,14 +622,15 @@ def read_publisher(id):
 
     tk.c.publishers = _get_publishers()
 
+    publisher = publisher_name = None
     id = tk.request.args.get("publisher", id)
     if id and id != "all":
-        tk.c.publisher = model.Group.get(id)
-        if not tk.c.publisher:
+        publisher = model.Group.get(id)
+        if not publisher:
             return tk.abort(
                 404, "A publisher with that name could not be found"
             )
-        tk.c.publisher_name = tk.c.publisher.name
+        publisher_name = publisher.name
     tk.c.top_packages = []  # package, dataset_views in tk.c.top_packages
 
     # Get the month details by fetching distinct values and determining the
@@ -647,18 +649,18 @@ def read_publisher(id):
     month = tk.c.month or "All"
     tk.c.publisher_page_views = 0
     q = model.Session.query(GA_Url).filter(
-        GA_Url.url == "/publisher/%s" % tk.c.publisher_name
+        GA_Url.url == "/publisher/%s" % publisher_name
     )
     entry = q.filter(GA_Url.period_name == tk.c.month).first()
     tk.c.publisher_page_views = entry.pageviews if entry else 0
 
     tk.c.top_packages = _get_packages(
-        publisher=tk.c.publisher, count=100, month=tk.c.month
+        publisher=publisher, count=100, month=tk.c.month
     )
 
     # Graph query
     top_packages_all_time = _get_packages(
-        publisher=tk.c.publisher, count=20, month="All"
+        publisher=publisher, count=20, month="All"
     )
     top_package_names = [x[0].name for x in top_packages_all_time]
     graph_query = (
@@ -685,7 +687,11 @@ def read_publisher(id):
             graph.append(all_series[series_name])
     tk.c.graph_data = json.dumps(_to_rickshaw(graph))
 
-    return tk.render("ga_report/publisher/read.html")
+    extra_vars = {
+        'publisher_name': publisher_name,
+        'publisher': publisher,
+    }
+    return tk.render("ga_report/publisher/read.html", extra_vars)
 
     # GaDatasetReport
 

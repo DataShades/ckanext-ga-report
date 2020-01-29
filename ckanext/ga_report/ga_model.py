@@ -160,7 +160,7 @@ def _get_package_and_publisher(url):
 
 
 def update_sitewide_stats(period_name, stat_name, data, period_complete_day):
-    for k, v in data.iteritems():
+    for k, v in data.items():
         item = (
             model.Session.query(GA_Stat)
             .filter(GA_Stat.period_name == period_name)
@@ -357,7 +357,7 @@ def update_social(period_name, data):
         GA_ReferralStat.period_name == period_name
     ).delete()
 
-    for url, data in data.iteritems():
+    for url, data in data.items():
         for entry in data:
             source = entry[0]
             count = entry[1]

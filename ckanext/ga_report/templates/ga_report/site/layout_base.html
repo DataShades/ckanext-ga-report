@@ -6,7 +6,7 @@
     {% import "/ga_report/site/_util.html" as u with context %}
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        {% if request.user_agent.find('MSIE') != -1 %}
+        {% if request.user_agent.string.find('MSIE') != -1 %}
             <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         {% endif %}
         <title>
@@ -133,20 +133,20 @@
         {% endblock %}
         {{h.literal(g.template_head_end)}}
     </head>
-    <body class="{{request.environ.get('pylons.routes_dict', {}).get('action')}} {{request.environ.get('pylons.routes_dict', {}).get('controller').split(':')[-1]}}">
+    <body class="{{g.action}} {{g.controller}}">
         <div id="wrap">
             <div class="header outer">
                 <header class="container">
                     <div class="menu account">
                         {% if c.user %}
                             <span class="ckan-logged-in">
-                                <a href="{{h.url_for(controller='user',action='me')}}">{{h.gravatar((c.userobj.email_hash),size=20)}}{{c.user}}</a>
+                                <a href="{{h.url_for('user.me')}}">{{h.gravatar((c.userobj.email_hash),size=20)}}{{c.user}}</a>
                                 <a href="{{h.url_for('/user/_logout')}}">Logout</a>
                             </span>
                         {% else %}
                             <span class="ckan-logged-out">
-                                <a href="{{h.url_for(controller='user',action='login')}}">Login</a>
-                                <a href="{{h.url_for(controller='user',action='register')}}">Register</a>
+                                <a href="{{h.url_for('user.login')}}">Login</a>
+                                <a href="{{h.url_for('user.register')}}">Register</a>
                             </span>
                         {% endif %}
                     </div>
@@ -162,7 +162,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <ul id="breadcrumbs">
-                                <li><a href="/"><i class="icon-home"></i></a></li>
+                                <li><a href="/"><i class="fa fa-home"></i></a></li>
                                 {% block breadcrumbs %}
                                 {% endblock %}
                             </ul>

@@ -1,6 +1,7 @@
 import logging
 import operator
 
+import ckan.lib.helpers as h
 import ckan.plugins.toolkit as tk
 
 
@@ -30,7 +31,7 @@ def get_helpers():
 
 
 def custom_gravatar(*pargs, **kargs):
-    gravatar = tk.h.gravatar(*pargs, **kargs)
+    gravatar = h.gravatar(*pargs, **kargs)
     pos = gravatar.find("/>")
     gravatar = (
         gravatar[:pos]
@@ -172,7 +173,7 @@ def _datasets_for_publisher(publisher, count):
             datasets[p]["visits"] = datasets[p]["visits"] + int(entry.visits)
 
     results = []
-    for k, v in datasets.iteritems():
+    for k, v in datasets.items():
         results.append((k, v["views"], v["visits"]))
 
     return sorted(results, key=operator.itemgetter(1), reverse=True)
