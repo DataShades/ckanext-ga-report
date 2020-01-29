@@ -239,11 +239,3 @@ and this renders the standard group listing. Same as the above, but using dictio
         </tr>
     </table>
 {% endmacro %}
-
-{% macro revision_list(revisions, allow_compare=False) %}
-    {{revision_list_from_dict(h.convert_to_dict('revisions', revisions), allow_compare=allow_compare)}}
-{% endmacro %}
-
-{% macro revision_list_from_dict(revisions, allow_compare=False) %}
-    {{h.snippet('snippets/revision_list.html', revisions=revisions, allow_compare=allow_compare)}}
-{% endmacro %}

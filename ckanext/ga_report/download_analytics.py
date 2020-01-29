@@ -589,15 +589,7 @@ class DownloadAnalytics(object):
                                 "WHERE url ilike '%"
                                 + filename.group(1)
                                 + "%' "
-                                "UNION SELECT distinct id FROM public.resource_revision t "
-                                "WHERE url ilike '%"
-                                + filename.group(1)
-                                + "%' "
                                 "UNION SELECT distinct id FROM public.resource t "
-                                "WHERE replace(url,'-','') ilike '%"
-                                + filename.group(1)
-                                + "%' "
-                                "UNION SELECT distinct id FROM public.resource_revision t "
                                 "WHERE replace(url,'-','') ilike '%"
                                 + filename.group(1)
                                 + "%' "
@@ -617,15 +609,7 @@ class DownloadAnalytics(object):
                                 "WHERE url ilike '%"
                                 + filename.group(1)
                                 + "%' "
-                                "UNION SELECT distinct id FROM public.resource_revision t "
-                                "WHERE url ilike '%"
-                                + filename.group(1)
-                                + "%' "
                                 "UNION SELECT distinct id FROM public.resource t "
-                                "WHERE replace(url,'-','') ilike '%"
-                                + filename.group(1)
-                                + "%' "
-                                "UNION SELECT distinct id FROM public.resource_revision t "
                                 "WHERE replace(url,'-','') ilike '%"
                                 + filename.group(1)
                                 + "%' "

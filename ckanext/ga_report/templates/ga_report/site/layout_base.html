@@ -19,9 +19,6 @@
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="shortcut icon" href="{{ h.url_for_static(g.favicon) }}" />
-        {% block optional_feed %}
-            <link rel="alternate" type="application/atom+xml" title="{{g.site_title}} - Recent Revision History" href="{{h.url_for(controller='revision', action='list', format='atom', days=1)}}" />
-        {% endblock %}
 
         <link href='//fonts.googleapis.com/css?family=Ubuntu:400,700' rel='stylesheet' type='text/css' />
         <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>

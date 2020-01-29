@@ -15,7 +15,7 @@ log = __import__("logging").getLogger(__name__)
 
 
 def make_uuid():
-    return unicode(uuid.uuid4())
+    return str(uuid.uuid4())
 
 
 metadata = MetaData()
@@ -142,24 +142,6 @@ def _get_package_and_publisher(url):
             )
             .first()
         )
-        # search historical data as a fallback only
-        if not dataset:
-            dataset_rev = (
-                model.Session.query(model.PackageRevision)
-                .filter(
-                    or_(
-                        model.PackageRevision.name == dataset_ref,
-                        model.PackageRevision.id == dataset_ref,
-                    )
-                )
-                .first()
-            )
-            if dataset_rev:
-                dataset = (
-                    model.Session.query(model.Package)
-                    .filter(model.Package.id == dataset_rev.id)
-                    .first()
-                )
         if dataset:
             owner_org = (
                 model.Session.query(group.Group)
