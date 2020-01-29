@@ -22,7 +22,7 @@
         {% block optional_feed %}
             <link rel="alternate" type="application/atom+xml" title="{{g.site_title}} - Recent Revision History" href="{{h.url_for(controller='revision', action='list', format='atom', days=1)}}" />
         {% endblock %}
-        
+
         <link href='//fonts.googleapis.com/css?family=Ubuntu:400,700' rel='stylesheet' type='text/css' />
         <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 
@@ -172,8 +172,8 @@
                         </div>
                     </div>
                 </div>
-            </div>      
-            {% set messages = h.flash.pop_messages() %}      
+            </div>
+            {% set messages = h.flash.pop_messages() %}
             {% if messages %}
                 <div class="flash-messages container">
                     <div class="alert {{m.category}}">
@@ -218,7 +218,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <ul class="widget-list">                                
+                            <ul class="widget-list">
                                 <li class="primarysidebar">
                                     <!-- Primary Side Bar Goes Here -->
                                     {% block primary_sidebar_extras %}
@@ -243,7 +243,7 @@
                             Licensed under the <a href="http://opendatacommons.org/licenses/odbl/1.0/">Open Database License</a>
                             <a href="http://opendefinition.org/"><img alt="This Content and Data is Open" src="//assets.okfn.org/images/ok_buttons/od_80x15_blue.png" style="border: none;"/></a>
                             <br/><br/>
-                            Powered by <a href="http://ckan.org">CKAN</a> v{{h.ckan_version()}}.<br/> 
+                            Powered by <a href="http://ckan.org">CKAN</a> v{{h.ckan_version()}}.<br/>
                         </p>
                     </div>
                 </div>
@@ -272,7 +272,7 @@
                 // later use will add offsets with leading '/' so ensure no trailing slash
                 CKAN.SITE_URL = CKAN.SITE_URL.replace(/\/$/, '');
                 CKAN.SITE_URL_NO_LOCALE = CKAN.SITE_URL_NO_LOCALE.replace(/\/$/, '');
-                {% if h.asbool(h.get_tracking_enabled()) %}
+                {% if h.get_tracking_enabled() %}
                     $(function (){
                         // Tracking
                         var url = location.pathname;

@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import os
 import logging
 import datetime
@@ -8,8 +10,8 @@ import requests
 import json
 import re
 from pylons import config
-from ga_model import _normalize_url
-import ga_model
+from .ga_model import _normalize_url
+from . import ga_model
 from ckan.logic.auth import get_package_object
 
 # from ga_client import GA
@@ -192,7 +194,7 @@ class DownloadAnalytics(object):
             args['end-date'] = end_date
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -226,10 +228,10 @@ class DownloadAnalytics(object):
             args["ids"] = "ga:" + self.profile_id
             args["filters"] = query
             args["alt"] = "json"
-            print args
+            print(args)
             results = self._get_json(args)
 
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             return dict(url=[])
 
@@ -277,8 +279,8 @@ class DownloadAnalytics(object):
     def _get_json(self, params, prev_fail=False):
         ga_token_filepath = os.path.expanduser(config.get('googleanalytics.token.filepath', ''))
         if not ga_token_filepath:
-            print 'ERROR: In the CKAN config you need to specify the filepath of the ' \
-                  'Google Analytics token file under key: googleanalytics.token.filepath'
+            print('ERROR: In the CKAN config you need to specify the filepath of the ' \
+                  'Google Analytics token file under key: googleanalytics.token.filepath')
             return
         try:
             headers = {'authorization': 'Bearer ' + self.token}
@@ -291,7 +293,7 @@ class DownloadAnalytics(object):
                 raise Exception("Request with params: %s failed" % params)
 
             return json.loads(r.content)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
 
         return dict(url=[])
@@ -310,7 +312,7 @@ class DownloadAnalytics(object):
             args["alt"] = "json"
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -333,7 +335,7 @@ class DownloadAnalytics(object):
             args["alt"] = "json"
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -367,7 +369,7 @@ class DownloadAnalytics(object):
             args["alt"] = "json"
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -404,7 +406,7 @@ class DownloadAnalytics(object):
             args["alt"] = "json"
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -443,7 +445,7 @@ class DownloadAnalytics(object):
             args["alt"] = "json"
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -544,7 +546,7 @@ class DownloadAnalytics(object):
             args['end-date'] = end_date
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -572,7 +574,7 @@ class DownloadAnalytics(object):
             args['end-date'] = end_date
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -607,7 +609,7 @@ class DownloadAnalytics(object):
             args['end-date'] = end_date
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 
@@ -664,7 +666,7 @@ class DownloadAnalytics(object):
             args['end-date'] = end_date
 
             results = self._get_json(args)
-        except Exception, e:
+        except Exception as e:
             log.exception(e)
             results = dict(url=[])
 

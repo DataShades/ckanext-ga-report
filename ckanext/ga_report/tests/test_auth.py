@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 from nose.tools import assert_equal
 from ckanext.ga_report.ga_auth import (init_service, get_profile_id)
@@ -7,9 +8,9 @@ class TestAuth:
     @classmethod
     def setup_class(cls):
         if not os.path.exists("token.dat") or not os.path.exists("credentials.json"):
-            print '*' * 60
-            print "Tests may not run without first having run the auth process"
-            print '*' * 60
+            print('*' * 60)
+            print("Tests may not run without first having run the auth process")
+            print('*' * 60)
 
     @classmethod
     def teardown_class(cls):

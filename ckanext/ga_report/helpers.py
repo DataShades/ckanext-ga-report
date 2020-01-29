@@ -1,16 +1,40 @@
 import logging
 import operator
 
-import ckan.lib.base as base
+import ckan.plugins.toolkit as tk
+
+
 import ckan.model as model
-from ckan.logic import get_action
 
 from ckanext.ga_report.ga_model import GA_Url, GA_Publisher
 from ckanext.ga_report.controller import _get_publishers
 
-from pylons import config
 
-_log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+
+def get_helpers():
+
+        return {
+            'ga_report_installed': lambda: True,
+            'popular_datasets': popular_datasets,
+            'most_popular_datasets': most_popular_datasets,
+            'single_popular_dataset': single_popular_dataset,
+            'month_option_title': month_option_title,
+            'gravatar': custom_gravatar,
+            'join_x': join_x,
+            'join_y': join_y,
+            'get_tracking_enabled': get_tracking_enabled,
+            'get_key_helper': get_key_helper
+        }
+
+
+def custom_gravatar(*pargs, **kargs):
+    gravatar = tk.h.gravatar(*pargs, **kargs)
+    pos = gravatar.find('/>')
+    gravatar = gravatar[:pos] + tk.literal(' alt="User\'s profile gravatar" ') + gravatar[pos:]
+    return gravatar
+
+
 
 def popular_datasets(count=10):
     import random
@@ -30,7 +54,7 @@ def popular_datasets(count=10):
         'datasets': datasets,
         'publisher': publisher
     }
-    return base.render_snippet('ga_report/ga_popular_datasets.html', **ctx)
+    return tk.render_snippet('ga_report/ga_popular_datasets.html', **ctx)
 
 def single_popular_dataset(top=100):
     '''Returns a random dataset from the most popular ones.
@@ -66,7 +90,7 @@ def single_popular_dataset(top=100):
                   .filter_by(state='active').first()
         if not dataset:
             return None
-    dataset_dict = get_action('package_show')({'model': model,
+    dataset_dict = tk.get_action('package_show')({'model': model,
                                                'session': model.Session,
                                                'validate': False},
                                               {'id':dataset.id})
@@ -81,13 +105,13 @@ def single_popular_dataset_html(top=100):
         'dataset': dataset_dict,
         'publisher': publisher_dict
         }
-    return base.render_snippet('ga_report/ga_popular_single.html', **context)
+    return tk.render_snippet('ga_report/ga_popular_single.html', **context)
 
 
 def most_popular_datasets(publisher, count=100, preview_image=None):
 
     if not publisher:
-        _log.error("No valid publisher passed to 'most_popular_datasets'")
+        log.error("No valid publisher passed to 'most_popular_datasets'")
         return ""
 
     results = _datasets_for_publisher(publisher, count)
@@ -100,7 +124,7 @@ def most_popular_datasets(publisher, count=100, preview_image=None):
         'preview_image': preview_image
     }
 
-    return base.render_snippet('ga_report/publisher/popular.html', **ctx)
+    return tk.render_snippet('ga_report/publisher/popular.html', **ctx)
 
 def _datasets_for_publisher(publisher, count):
     datasets = {}
@@ -114,15 +138,15 @@ def _datasets_for_publisher(publisher, count):
             p = model.Package.get(entry.url[len('/data/dataset/'):])
 
             if not p:
-                _log.warning("Could not find Package for {url}".format(url=entry.url))
+                log.warning("Could not find Package for {url}".format(url=entry.url))
                 continue
 
             if not p.state == 'active':
-                _log.warning("Package {0} is not active, it is {1}".format(p.name, p.state))
+                log.warning("Package {0} is not active, it is {1}".format(p.name, p.state))
                 continue
 
             if not p.private == False:
-                _log.warning("Package {0} is private {1}".format(p.name, p.state))
+                log.warning("Package {0} is private {1}".format(p.name, p.state))
                 continue
 
             if not p in datasets:
@@ -142,7 +166,7 @@ def month_option_title(month_iso, months, day):
     try:
         index = month_isos.index(month_iso)
     except ValueError:
-        _log.error('Month "%s" not found in list of months.' % month_iso)
+        log.error('Month "%s" not found in list of months.' % month_iso)
         return month_iso
     month_name = months[index][1]
     if index==0:
@@ -156,7 +180,7 @@ def join_y(graph):
     return ','.join([y for x,y in graph])
 
 def get_tracking_enabled():
-    return config.get('ckan.tracking_enabled', 'false')
+    return tk.asbool(tk.config.get('ckan.tracking_enabled', 'false'))
 
 def get_key_helper(d, key):
     return d.get(key)

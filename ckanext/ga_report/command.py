@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import logging
 import datetime
 import os
@@ -25,7 +27,7 @@ class InitDB(CkanCommand):
         model.Session.configure(bind=model.meta.engine)
         log = logging.getLogger('ckanext.ga_report')
 
-        import ga_model
+        from . import ga_model
         ga_model.init_tables()
         log.info("DB tables are setup")
 
@@ -48,7 +50,7 @@ class FixTimePeriods(CkanCommand):
 
     def command(self):
         import ckan.model as model
-        from ga_model import post_update_url_stats
+        from .ga_model import post_update_url_stats
         self._load_config()
         model.Session.remove()
         model.Session.configure(bind=model.meta.engine)
@@ -94,13 +96,13 @@ class LoadAnalytics(CkanCommand):
     def command(self):
         self._load_config()
 
-        from download_analytics import DownloadAnalytics
-        from ga_auth import (init_service, get_profile_id)
+        from .download_analytics import DownloadAnalytics
+        from .ga_auth import (init_service, get_profile_id)
 
         ga_token_filepath = os.path.expanduser(config.get('googleanalytics.token.filepath', ''))
         if not ga_token_filepath:
-            print 'ERROR: In the CKAN config you need to specify the filepath of the ' \
-                  'Google Analytics token file under key: googleanalytics.token.filepath'
+            print('ERROR: In the CKAN config you need to specify the filepath of the ' \
+                  'Google Analytics token file under key: googleanalytics.token.filepath')
             return
 
         try:

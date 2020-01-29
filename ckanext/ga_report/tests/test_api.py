@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import datetime
 from nose.tools import assert_equal
@@ -10,9 +11,9 @@ class TestAPI:
     @classmethod
     def setup_class(cls):
         if not os.path.exists("token.dat") or not os.path.exists("credentials.json"):
-            print '*' * 60
-            print "Tests may not run without first having run the auth process"
-            print '*' * 60
+            print('*' * 60)
+            print("Tests may not run without first having run the auth process")
+            print('*' * 60)
         init_tables()
 
     @classmethod
