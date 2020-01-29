@@ -205,7 +205,9 @@ def _get_packages(publisher=None, month="", count=-1):
                     .filter(GA_Stat.stat_name == "Downloads")
                     .filter(GA_Stat.key == package.name)
                 )
-                if month != "All":  # Fetch everything unless the month is specific
+                if (
+                    month != "All"
+                ):  # Fetch everything unless the month is specific
                     dls = dls.filter(GA_Stat.period_name == month)
                 downloads = 0
                 for x in dls:
@@ -264,7 +266,9 @@ def _month_details(cls, stat_key=None):
     if vals and vals[0][1]:
         day = int(vals[0][1])
         ordinal = (
-            "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+            "th"
+            if 11 <= day <= 13
+            else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
         )
         day = "{day}{ordinal}".format(day=day, ordinal=ordinal)
 
@@ -279,14 +283,18 @@ def csv(month):
     q = model.Session.query(GA_Stat).filter(GA_Stat.stat_name != "Downloads")
     if month != "all":
         q = q.filter(GA_Stat.period_name == month)
-    entries = q.order_by("GA_Stat.period_name, GA_Stat.stat_name, GA_Stat.key").all()
+    entries = q.order_by(
+        "GA_Stat.period_name, GA_Stat.stat_name, GA_Stat.key"
+    ).all()
 
     content = io.StringIO()
     writer = csv.writer(content)
     writer.writerow(["Period", "Statistic", "Key", "Value"])
 
     for entry in entries:
-        writer.writerow([entry.period_name, entry.stat_name, entry.key, entry.value])
+        writer.writerow(
+            [entry.period_name, entry.stat_name, entry.key, entry.value]
+        )
 
     response = flask.make_response(io.getvalue())
     response.headers["Content-Type"] = "text/csv; charset=utf-8"
@@ -306,7 +314,9 @@ def index():
     tk.c.month_desc = "all months"
     tk.c.month = tk.request.args.get("month", "")
     if tk.c.month:
-        tk.c.month_desc = "".join([m[1] for m in tk.c.months if m[0] == tk.c.month])
+        tk.c.month_desc = "".join(
+            [m[1] for m in tk.c.months if m[0] == tk.c.month]
+        )
 
     q = model.Session.query(GA_Stat).filter(GA_Stat.stat_name == "Totals")
     if tk.c.month:
@@ -397,7 +407,11 @@ def index():
 
     tk.c.social_referrer_totals, tk.c.social_referrers = [], []
     q = model.Session.query(GA_ReferralStat)
-    q = q.filter(GA_ReferralStat.period_name == tk.c.month) if tk.c.month else q
+    q = (
+        q.filter(GA_ReferralStat.period_name == tk.c.month)
+        if tk.c.month
+        else q
+    )
     q = q.order_by("ga_referrer.count::int desc")
     for entry in q.all():
         tk.c.social_referrers.append(
@@ -412,7 +426,11 @@ def index():
     q = model.Session.query(
         GA_ReferralStat.url, func.sum(GA_ReferralStat.count).label("count")
     )
-    q = q.filter(GA_ReferralStat.period_name == tk.c.month) if tk.c.month else q
+    q = (
+        q.filter(GA_ReferralStat.period_name == tk.c.month)
+        if tk.c.month
+        else q
+    )
     q = q.order_by("count desc").group_by(GA_ReferralStat.url)
     for entry in q.all():
         tk.c.social_referrer_totals.append(
@@ -456,14 +474,20 @@ def index():
         stats = stats_in_table + sorted(list(stats_not_in_table))
         graph = [graph_dict[x] for x in stats]
         setattr(
-            tk.c, v + "_graph", json.dumps(_to_rickshaw(graph, percentageMode=True))
+            tk.c,
+            v + "_graph",
+            json.dumps(_to_rickshaw(graph, percentageMode=True)),
         )
 
         # Get the total for each set of values and then set the value as
         # a percentage of the total
         if k == "Social sources":
             total = sum(
-                [x for n, x, graph in tk.c.global_totals if n == "Total visits"]
+                [
+                    x
+                    for n, x, graph in tk.c.global_totals
+                    if n == "Total visits"
+                ]
             )
         else:
             total = sum([num for _, num in entries])
@@ -476,16 +500,6 @@ def index():
 
 ga_report.add_url_rule("/site-usage", view_func=index)
 ga_report.add_url_rule("/site-usage_<month>.csv", view_func=csv)
-# ga_report.add_url_rule(
-#             '/site-usage/downloads',
-#             controller='ckanext.ga_report.controller:GaReport',
-#             action='downloads'
-#         )
-# ga_report.add_url_rule(
-#             '/site-usage/downloads_{month}.csv',
-#             controller='ckanext.ga_report.controller:GaReport',
-#             action='csv_downloads'
-#         )
 
 
 def publisher_csv(month):
@@ -528,7 +542,9 @@ def dataset_csv(id="all", month="all"):
     if id != "all":
         tk.c.publisher = model.Group.get(id)
         if not tk.c.publisher:
-            return tk.abort(404, "A publisher with that name could not be found")
+            return tk.abort(
+                404, "A publisher with that name could not be found"
+            )
 
     packages = _get_packages(publisher=tk.c.publisher, month=tk.c.month)
 
@@ -547,12 +563,21 @@ def dataset_csv(id="all", month="all"):
 
     for package, view, visit, downloads, formats in packages:
         writer.writerow(
-            [package.title, package.name, view, visit, downloads, formats, month]
+            [
+                package.title,
+                package.name,
+                view,
+                visit,
+                downloads,
+                formats,
+                month,
+            ]
         )
     response = flask.make_response(content.getvalue())
     response.headers["Content-Type"] = "text/csv; charset=utf-8"
     response.headers["Content-Disposition"] = str(
-        "attachment; filename=datasets_%s_%s.csv" % (tk.c.publisher_name, month,)
+        "attachment; filename=datasets_%s_%s.csv"
+        % (tk.c.publisher_name, month,)
     )
     return response
 
@@ -568,7 +593,9 @@ def publishers():
     tk.c.month = tk.request.args.get("month", "")
     tk.c.month_desc = "all months"
     if tk.c.month:
-        tk.c.month_desc = "".join([m[1] for m in tk.c.months if m[0] == tk.c.month])
+        tk.c.month_desc = "".join(
+            [m[1] for m in tk.c.months if m[0] == tk.c.month]
+        )
 
     tk.c.top_publishers = _get_top_publishers()
     graph_data = _get_top_publishers_graph()
@@ -598,7 +625,9 @@ def read_publisher(id):
     if id and id != "all":
         tk.c.publisher = model.Group.get(id)
         if not tk.c.publisher:
-            return tk.abort(404, "A publisher with that name could not be found")
+            return tk.abort(
+                404, "A publisher with that name could not be found"
+            )
         tk.c.publisher_name = tk.c.publisher.name
     tk.c.top_packages = []  # package, dataset_views in tk.c.top_packages
 
@@ -611,7 +640,9 @@ def read_publisher(id):
     if not tk.c.month:
         tk.c.month_desc = "all months"
     else:
-        tk.c.month_desc = "".join([m[1] for m in tk.c.months if m[0] == tk.c.month])
+        tk.c.month_desc = "".join(
+            [m[1] for m in tk.c.months if m[0] == tk.c.month]
+        )
 
     month = tk.c.month or "All"
     tk.c.publisher_page_views = 0
@@ -645,7 +676,9 @@ def read_publisher(id):
         all_series[package.name] = all_series.get(
             package.name, {"name": package.title, "raw": {}}
         )
-        all_series[package.name]["raw"][entry.period_name] = int(entry.pageviews)
+        all_series[package.name]["raw"][entry.period_name] = int(
+            entry.pageviews
+        )
     graph = []
     for series_name in top_package_names:
         if series_name in all_series:
@@ -658,9 +691,11 @@ def read_publisher(id):
 
 
 ga_report.add_url_rule("/site-usage/publisher", view_func=publishers)
-ga_report.add_url_rule("/site-usage/publishers_<month>.csv", view_func=publisher_csv)
+ga_report.add_url_rule(
+    "/site-usage/publishers_<month>.csv", view_func=publisher_csv
+)
 ga_report.add_url_rule(
     "/site-usage/dataset/datasets_<id>_<month>.csv", view_func=dataset_csv
 )
 ga_report.add_url_rule("/site-usage/dataset", view_func=read)
-ga_report.add_url_rule("/site-usage/dataset/{id}", view_func="read_publisher")
+ga_report.add_url_rule("/site-usage/dataset/{id}", view_func=read_publisher)

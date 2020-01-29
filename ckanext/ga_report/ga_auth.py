@@ -2,7 +2,7 @@ import httplib2
 from apiclient.discovery import build
 
 from oauth2client.service_account import ServiceAccountCredentials
-from pylons import config
+import ckan.plugins.toolkit as tk
 
 
 def _prepare_credentials(credentials_filename):
@@ -10,10 +10,9 @@ def _prepare_credentials(credentials_filename):
     Either returns the user's oauth credentials or uses the credentials
     file to generate a token (by forcing the user to login in the browser)
     """
-    scope = ['https://www.googleapis.com/auth/analytics.readonly']
+    scope = ["https://www.googleapis.com/auth/analytics.readonly"]
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        credentials_filename,
-        scopes=scope
+        credentials_filename, scopes=scope
     )
     return credentials
 
@@ -29,7 +28,10 @@ def init_service(credentials_file):
     credentials = _prepare_credentials(credentials_file)
     http = credentials.authorize(http)  # authorize the http object
 
-    return credentials.get_access_token().access_token, build('analytics', 'v3', http=http)
+    return (
+        credentials.get_access_token().access_token,
+        build("analytics", "v3", http=http),
+    )
 
 
 def get_profile_id(service):
@@ -42,28 +44,39 @@ def get_profile_id(service):
     """
     accounts = service.management().accounts().list().execute()
 
-    if not accounts.get('items'):
+    if not accounts.get("items"):
         return None
 
-    accountName = config.get('googleanalytics.account')
+    accountName = tk.config.get("googleanalytics.account")
     if not accountName:
-        raise Exception('googleanalytics.account needs to be configured')
-    webPropertyId = config.get('googleanalytics.id')
+        raise Exception("googleanalytics.account needs to be configured")
+    webPropertyId = tk.config.get("googleanalytics.id")
     if not webPropertyId:
-        raise Exception('googleanalytics.id needs to be configured')
-    for acc in accounts.get('items'):
-        if acc.get('name') == accountName:
-            accountId = acc.get('id')
+        raise Exception("googleanalytics.id needs to be configured")
+    for acc in accounts.get("items"):
+        if acc.get("name") == accountName:
+            accountId = acc.get("id")
             break
     else:
-        raise Exception('Account did not match. Check `googleanalytics.account`')
+        raise Exception(
+            "Account did not match. Check `googleanalytics.account`"
+        )
 
-    webproperties = service.management().webproperties().list(accountId=accountId).execute()
+    webproperties = (
+        service.management()
+        .webproperties()
+        .list(accountId=accountId)
+        .execute()
+    )
 
-    profiles = service.management().profiles().list(
-        accountId=accountId, webPropertyId=webPropertyId).execute()
+    profiles = (
+        service.management()
+        .profiles()
+        .list(accountId=accountId, webPropertyId=webPropertyId)
+        .execute()
+    )
 
-    if profiles.get('items'):
-        return profiles.get('items')[0].get('id')
+    if profiles.get("items"):
+        return profiles.get("items")[0].get("id")
 
     return None

@@ -3,22 +3,23 @@ import logging
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 import ckanext.ga_report.views as views
-
+import ckanext.ga_report.cli as cli
 import ckanext.ga_report.helpers as helpers
 
-log = logging.getLogger('ckanext.ga-report')
+log = logging.getLogger("ckanext.ga-report")
 
 
 class GAReportPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurer)
-    p.implements(p.IRoutes)
+    p.implements(p.IBlueprint)
+    p.implements(p.IClick)
     p.implements(p.ITemplateHelpers)
 
     # IConfigurer
 
     def update_config(self, config):
-        tk.add_template_directory(config, 'templates')
-        tk.add_public_directory(config, 'public')
+        tk.add_template_directory(config, "templates")
+        tk.add_public_directory(config, "public")
 
     # ITemplateHelpers
 
@@ -26,5 +27,11 @@ class GAReportPlugin(p.SingletonPlugin):
         return helpers.get_helpers()
 
     # IBlueprint
+
+    def get_commands(self):
+        return cli.get_commands()
+
+    # IBlueprint
+
     def get_blueprint(self):
         return views.get_blueprints()
