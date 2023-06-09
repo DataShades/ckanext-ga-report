@@ -78,8 +78,8 @@ and this renders the standard group listing -->
         {% for group in groups %}
             <tr>
                 <td><a href="{{h.url_for('group.read', id=group.name)}}">{{group.display_name}}</a></td>
-                <td>{{len(group.packages)}}</td>
-                <td>{{h.truncate(group.description, length=80, whole_word=True)}}</td>
+                <td>{{ len(group.packages) }}</td>
+                <td>{{ group.description | truncate(80) }}</td>
             </tr>
         {% endfor %}
     </table>
@@ -93,8 +93,8 @@ and this renders the standard group listing. Same as the above, but using dictio
         {% for group in groups %}
             <tr>
                 <td><a href="{{h.url_for( '%s_read' % str(group['type'])  , action='read', id=group['name'])}}">{{group['display_name']}}</a></td>
-                <td>{{group['packages']}}</td>
-                <td>{{h.truncate(group['description'], length=80, whole_word=True)}}</td>
+                <td>{{ group['packages'] }}</td>
+                <td>{{ group['description'] | truncate(80)}}</td>
             </tr>
         {% endfor %}
     </table>

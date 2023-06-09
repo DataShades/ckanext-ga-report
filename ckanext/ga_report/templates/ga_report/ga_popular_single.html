@@ -8,7 +8,7 @@
             <strong>Publisher</strong> :
             <a href="/publisher/{{publisher['name']}}">{{publisher['title']}}</a>
         </h4>
-        <div>{{h.truncate(dataset['notes_rendered'], length=200, whole_word=True)}}</div>
+        <div>{{ dataset['notes_rendered'] | truncate(200) }}</div>
     </div>
     <div>
         <a href="{{h.url_for('ga_report.read')}}" class="btn">Other popular datasets</a>
