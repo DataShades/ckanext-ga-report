@@ -38,8 +38,8 @@ CKAN.GA_Reports.render_rickshaw = function( css_name, data, mode, colorscheme ) 
         series: data ,
         height: 328
     });
-    var x_axis = new Rickshaw.Graph.Axis.Time( { 
-        graph: graph 
+    var x_axis = new Rickshaw.Graph.Axis.Time( {
+        graph: graph
     } );
     var y_axis = new Rickshaw.Graph.Axis.Y( {
         graph: graph,
@@ -60,8 +60,8 @@ CKAN.GA_Reports.render_rickshaw = function( css_name, data, mode, colorscheme ) 
 };
 
 CKAN.GA_Reports.bind_sparklines = function() {
-  /* 
-   * Bind to the 'totals' tab being on screen, when the 
+  /*
+   * Bind to the 'totals' tab being on screen, when the
    * Sparkline graphs should be drawn.
    * Note that they cannot be drawn sooner.
    */
@@ -94,12 +94,12 @@ CKAN.GA_Reports.bind_sparklines = function() {
 };
 
 CKAN.GA_Reports.bind_sidebar = function() {
-  /* 
-   * Bind to changes in the tab behaviour: 
-   * Show the correct rickshaw graph in the sidebar. 
+  /*
+   * Bind to changes in the tab behaviour:
+   * Show the correct rickshaw graph in the sidebar.
    * Not to be called before all graphs load.
    */
-  $('a[data-toggle="tab"]').on(
+  $('a[data-bs-toggle="tab"]').on(
     'shown',
     function(e) {
       var href = $(e.target).attr('href');
@@ -117,12 +117,12 @@ CKAN.GA_Reports.bind_sidebar = function() {
     }
   );
   /* The first tab might already have been shown */
-  $('li.active > a[data-toggle="tab"]').trigger('shown');
+  $('li.active > a[data-bs-toggle="tab"]').trigger('shown');
   $('.tabbable').on('shown', function(e){$('span.reader-offleft').not('.show-menu').text('Tab ');$('span',e.target).text('Tab selected'); e.stopPropagation(); });
 };
 
 CKAN.GA_Reports.bind_month_selector = function() {
-  var handler = function(e) { 
+  var handler = function(e) {
     var target = $(e.delegateTarget);
     var form = target.closest('form');
     var url = form.attr('action')+'?month='+target.val()+window.location.hash;

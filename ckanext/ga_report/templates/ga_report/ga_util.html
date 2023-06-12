@@ -8,7 +8,7 @@
 {% endmacro %}
 
 {% macro social_table(items, with_source=False)  %}
-    <table class="ga-reports-table table table-condensed table-bordered table-striped">
+    <table class="ga-reports-table table table-sm table-bordered table-striped">
         <tr>
             <th>Name</th>
             {% if with_source %}
@@ -44,7 +44,7 @@
 {% endmacro %}
 
 {% macro stat_table(items, title='Views') %}
-    <table class="ga-reports-table table table-condensed table-bordered table-striped">
+    <table class="ga-reports-table table table-sm table-bordered table-striped">
         <tr>
             <th>Name</th>
             <th class="td-numeric">% {{title}}</th>

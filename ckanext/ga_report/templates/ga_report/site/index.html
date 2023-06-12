@@ -31,33 +31,33 @@
             <div class="whitebox">
                 <div class="tabbable">
                     <ul class="nav nav-tabs">
-                        <li class="active"><a href="#totals" data-hash="totals" data-toggle="tab"><span class="reader-offleft">Tab </span>Totals</a></li>
+                        <li class="active"><a href="#totals" data-hash="totals" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Totals</a></li>
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="reader-offleft">Tab </span>Browsers <span class="reader-offleft show-menu"> - show menu </span>
+                            <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown"><span class="reader-offleft">Tab </span>Browsers <span class="reader-offleft show-menu"> - show menu </span>
                             <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="#browsers_names" data-hash="browsers_names" data-toggle="tab"><span class="reader-offleft">Tab </span>Browsers</a></li>
-                                <li><a href="#browsers_versions" data-hash="browsers_versions" data-toggle="tab"><span class="reader-offleft">Tab </span>Versions</a></li>
+                                <li><a href="#browsers_names" class="dropdown-item" data-hash="browsers_names" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Browsers</a></li>
+                                <li><a href="#browsers_versions" class="dropdown-item" data-hash="browsers_versions" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Versions</a></li>
                             </ul>
                         </li>
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="reader-offleft">Tab </span>Operating Systems <span class="reader-offleft show-menu"> - show menu </span>
+                            <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown"><span class="reader-offleft">Tab </span>Operating Systems <span class="reader-offleft show-menu"> - show menu </span>
                             <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="#os" data-hash="os" data-toggle="tab"><span class="reader-offleft">Tab </span>Operating Systems</a></li>
-                                <li><a href="#os_versions" data-hash="os_versions" data-toggle="tab"><span class="reader-offleft">Tab </span>Versions</a></li>
+                                <li><a href="#os" class="dropdown-item" data-hash="os" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Operating Systems</a></li>
+                                <li><a href="#os_versions" class="dropdown-item" data-hash="os_versions" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Versions</a></li>
                             </ul>
                         </li>
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="reader-offleft">Tab </span>Social <span class="reader-offleft show-menu"> - show menu </span>
+                            <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown"><span class="reader-offleft">Tab </span>Social <span class="reader-offleft show-menu"> - show menu </span>
                             <b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href="#social_networks" data-hash="social_networks" data-toggle="tab"><span class="reader-offleft">Tab </span>All networks</a></li>
-                                <li><a href="#social_referrals_totals" data-hash="social_referrals_totals" data-toggle="tab"><span class="reader-offleft">Tab </span>Referral links</a></li>
+                                <li><a href="#social_networks" class="dropdown-item" data-hash="social_networks" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>All networks</a></li>
+                                <li><a href="#social_referrals_totals" class="dropdown-item" data-hash="social_referrals_totals" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Referral links</a></li>
                             </ul>
                         </li>
-                        <li><a href="#languages" data-hash="languages" data-toggle="tab"><span class="reader-offleft">Tab </span>Languages</a></li>
-                        <li><a href="#country" data-hash="country" data-toggle="tab"><span class="reader-offleft">Tab </span>Country</a></li>
+                        <li><a href="#languages" data-hash="languages" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Languages</a></li>
+                        <li><a href="#country" data-hash="country" data-bs-toggle="tab"><span class="reader-offleft">Tab </span>Country</a></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane active" id="totals">
@@ -65,7 +65,7 @@
                                 <label class="ga-reports-heading" for="total-select">Show stats table for:</label>
                                 {{m.month_selector(c.month, c.months, c.day, 'total-select')}}
                             </form>
-                            <table class="ga-reports-table table table-condensed table-bordered table-striped">
+                            <table class="ga-reports-table table table-sm table-bordered table-striped">
                                 <tr>
                                     <th>Name</th>
                                     <th class="td-numeric">Value</th>
