@@ -3,7 +3,7 @@ import operator
 
 import ckan.lib.helpers as h
 import ckan.plugins.toolkit as tk
-
+from ckan.plugins import plugin_loaded
 
 import ckan.model as model
 
@@ -201,7 +201,7 @@ def join_y(graph):
 
 
 def get_tracking_enabled():
-    return tk.asbool(tk.config.get("ckan.tracking_enabled", "false"))
+    return plugin_loaded("tracking")
 
 
 def get_key_helper(d, key):
